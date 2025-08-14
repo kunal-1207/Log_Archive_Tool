@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import tarfile
+from datetime import datetime
+from pathlib import Path
+
+def create_archive(log_dir):
+    log_dir_path = Path(log_dir)
+    
+    # Validate input directory
+    if not log_dir_path.exists() or not log_dir_path.is_dir():
+        print(f"Error: '{log_dir}' is not a valid directory.")
+        sys.exit(1)
+    
+    # Create archives directory if not exists
+    archive_dir = Path.cwd() / "archives"
+    archive_dir.mkdir(exist_ok=True)
+
+    # Generate filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    archive_name = f"logs_archive_{timestamp}.tar.gz"
+    archive_path = archive_dir / archive_name
+
+    # Create tar.gz file
+    with tarfile.open(archive_path, "w:gz") as tar:
+        tar.add(log_dir_path, arcname=log_dir_path.name)
+
+    # Log the archive creation
+    log_file = archive_dir / "archive_log.txt"
+    with open(log_file, "a") as f:
+        f.write(f"{datetime.now()} - Created archive: {archive_path.name}\n")
+
+    print(f"Archive created: {archive_path}")
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: log-archive <log-directory>")
+        sys.exit(1)
+
+    log_dir = sys.argv[1]
+    create_archive(log_dir)
+
+if __name__ == "__main__":
+    main()
